@@ -11,8 +11,9 @@ class CPU:
         self.alu()
         self.trace()
         self.run()
-        self.registers = [0] * 8
+        self.reg = [0] * 8
         self.memory = [0] * 256
+        self.pc = 0
 
     def load(self):
         """Load a program into memory."""
@@ -65,8 +66,28 @@ class CPU:
 
         print()
 
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, value, address ):
+        self.ram[address] = value
+
     def run(self):
         """Run the CPU."""
-        pass
+       ir = self.pc
+       operand_a = self.ram_read(self.ps +1)
+       operand_b = self.ram_read(self.pc + 2)
+       running = True
+       
+        while running:
+            if self.ram_read(ir) == 0b10000010: #LDI
+                self.reg[operand_a] = int(operand_b)
+                ir += 3
+            elif self.ram_read(ir) == 0b01000111: #PRN
+                print("did work", self.reg[int(operand_a)])
+                ir += 2
+            elif self.ram_read(ir) == 0b00000001: #HLT
+                running = False
 
+        
  
