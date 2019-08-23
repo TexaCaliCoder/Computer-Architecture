@@ -1,0 +1,82 @@
+
+
+        ----------- lecture Notes --------------
+  grab the 1st 2 bits from the instruction fot the opperand instructioon 
+  AABCDDDD
+  aa = Number of operands for this code (1 or 2)
+  b = 1 if this is an ALU operation
+  c = 1 if this instruction sets the pc
+  dddd = instruction identifier 
+
+  -----bit wise operations 
+  -Operation-    -bitwise operator-   -boolean operator-
+  or                    |                   ||
+  and                   &                   &&
+  xor                   ^                  none    (1 and only 1 is true)
+  not                   ~                   !
+
+  -----shifting bits
+  0b10101010 >> 1 (chop the last bit bit 1 and adds a 0 to the begining)  == 0b01010101 (shift right)
+            >> is shift right, the number is how many to chop
+        << reverses the right shift cuts from the begining adding to the end.
+
+        use to find the operands (see screen shot)
+
+------ bit masking (to find ALU)
+
+    11111101
+  & 00001000
+    ---------
+    00001000
+    1st step shift then masking
+
+    Shift: 
+          0b10100010 
+    >> 5  0b00000101
+    ---> then 
+    Mask: 
+          0b00000101 
+    &     0b00000001 
+    -----------------
+          0b00000001
+
+    is_alu_op = ((0b10100010 >> 5) & 0b00000001) == 1
+    is_alu_op returns true
+
+    ------open files 
+    file = open ('./print8.ls8)
+
+    for line in file 
+        print line
+    file.close()  // if you dont close it becomes a memory leak
+
+```
+    import sys
+
+    print (sys.argv) // prints the commands passed to the terminal
+
+//checking to make sure we pass a second arg
+    if len(sys.argv) != 2:
+        print('please pass in second arg')
+        sys.exit(1)
+
+    
+    try:
+        with open('./print8.ls8' or sys.arg[1]) as file: //using with closes the file when function is complete
+            for line in file:
+                comment_split = line.split('#')
+                possible_number = comment_split[0]
+                if possible_number == '':
+                    continue
+                first_bit = possible_number[0]
+                if first_bit == '1' or first_bit == '0':
+                    x = int(possible_number[:8], base=2)
+                    print('{:0b}, {:d}'.format(x, x))
+
+    except FileNotFound:
+        print('Unable to find sys.args[2], please check the name and try again')
+        sys.exit(2)
+```
+
+    
+
