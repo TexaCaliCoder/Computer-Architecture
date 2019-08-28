@@ -2,14 +2,23 @@
 
 import sys
 
+HLT = 0b00000001
+MULT = 0b10100010
+PRN =  0b01000111
+LDI =  0b10000010
+POP =  0b01000110
+PUSH = 0b01000101
+
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
         self.reg = [0] * 8
-        self.ram = [0] * 256
+        self.ram = [0] * 255
         self.pc = 0
+        self.reg[7] = int('F3', 16)
 
     def load(self):
         """Load a program into memory."""
@@ -77,34 +86,65 @@ class CPU:
     def ram_write(self, value, address ):
         self.ram[address] = value
 
+    def ldi(self, operand_a, operand_b):
+        self.reg[operand_a] = int(operand_b)
+        print('ldi')
+        self.pc += 3
+    
+    def prn(self, operand_a):
+        print( 'print', self.reg[int(operand_a)])
+        self.pc += 2
+
+    def mult(self, operand_a, operand_b):
+        mult_sum = self.reg[operand_a] * self.reg[operand_b]
+        self.reg[operand_a] = mult_sum
+        self.pc += 3
+
+    def push(self, operand_a):
+        #SP = ram location 
+        print('push')
+        SP = self.reg[7] #244 
+        self.reg[7] = ( SP - 1) % 255 #243
+        val = self.reg[operand_a]
+        self.ram_write(val, SP -1)
+        self.pc += 2
+        
+
+    def pop(self, operand_a):
+        print('pop')
+        SP = self.reg[7] #243
+        self.reg[7] = (SP + 1) % 255 #244
+        val = self.ram_read(SP)
+        self.reg[operand_a] = val 
+        self.pc += 2
+        
+
+
     def run(self):
         """Run the CPU."""
-        ir = self.pc
         running = True
-       
         while running:
-            operand_a = self.ram_read(ir +1)
-            operand_b = self.ram_read(ir + 2)
+            
+            op = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc +1)
+            operand_b = self.ram_read(self.pc + 2)
             # print(f'operand1: {operand_a}')
             # print(f'operand2: {operand_b}')
 
-            if self.ram_read(ir) == 0b10000010: #LDI
-                self.reg[operand_a] = int(operand_b)
-                print('ldi')
-                ir += 3
-            elif self.ram_read(ir) == 0b01000111: #PRN
-                print( 'print', self.reg[int(operand_a)])
-                ir += 2
-            elif self.ram_read(ir) == 0b10100010: #MULT
-                print('mult')
-                mult_sum = self.reg[operand_a] * self.reg[operand_b]
-                self.reg[operand_a] = mult_sum
-                ir += 3
-            elif self.ram_read(ir) == 0b00000001: #HLT
+
+            if op == LDI: #LDI
+                self.ldi(operand_a, operand_b)
+            elif op == PRN: #PRN
+                self.prn(operand_a)
+            elif op == MULT: #MULT
+                self.mult(operand_a,operand_b) 
+            elif op == PUSH: #PUSH
+                self.push(operand_a)
+            elif op == POP:
+                self.pop(operand_a)
+            elif op == HLT: #HLT
                 print('halt')
                 running = False
 
 
-
-
-
+    
