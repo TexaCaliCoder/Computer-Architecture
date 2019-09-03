@@ -20,12 +20,12 @@ then prints it out:
 ```
 # print8.ls8: Print the number 8 on the screen
 
-10000010 # LDI R0,8
-00000000
-00001000
-01000111 # PRN R0
-00000000
-00000001 # HLT
+10000010 # LDI R0,8 (130)
+00000000   (0)
+00001000 (8)
+01000111 # PRN R0 (71)
+00000000 (0)
+00000001 # HLT (1)
 ```
 
 The binary numeric value on the left in the `print8.ls8` code above is either:
@@ -64,6 +64,11 @@ but you'll have to implement those three above instructions first!
 * Note what has been implemented, and what hasn't.
 * Read this whole file.
 * Skim the spec.
+
+```
+Files
+    call.ls8 = 
+```
 
 ## Step 1: Add the constructor to `cpu.py`
 

@@ -2,12 +2,23 @@
 
 import sys
 
+HLT = 0b00000001
+MULT = 0b10100010
+PRN =  0b01000111
+LDI =  0b10000010
+POP =  0b01000110
+PUSH = 0b01000101
+
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.reg = [0] * 8
+        self.ram = [0] * 255
+        self.pc = 0
+        self.reg[7] = int('F3', 16)
 
     def load(self):
         """Load a program into memory."""
@@ -16,19 +27,28 @@ class CPU:
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+       
+        try:
+            with open( sys.argv[1]) as file:
+                for line in file:
+                    comment_split = line.split('#')
+                    possible_number = comment_split[0]
+                    if possible_number == '':
+                        continue
+                    first_bit = possible_number[0]
+                    if first_bit == '1' or first_bit == '0':
+                        instruction = int(possible_number[:8], 2)
+                        self.ram[address] = instruction
+                        address +=1
+                        
+        except FileNotFoundError:
+            print(f'Unable to find {sys.argv[1]}, please check the name and try again')
+            sys.exit(2)
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -60,8 +80,71 @@ class CPU:
 
         print()
 
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, value, address ):
+        self.ram[address] = value
+
+    def ldi(self, operand_a, operand_b):
+        self.reg[operand_a] = int(operand_b)
+        print('ldi')
+        self.pc += 3
+    
+    def prn(self, operand_a):
+        print( 'print', self.reg[int(operand_a)])
+        self.pc += 2
+
+    def mult(self, operand_a, operand_b):
+        mult_sum = self.reg[operand_a] * self.reg[operand_b]
+        self.reg[operand_a] = mult_sum
+        self.pc += 3
+
+    def push(self, operand_a):
+        #SP = ram location 
+        print('push')
+        SP = self.reg[7] #244 
+        self.reg[7] = ( SP - 1) % 255 #243
+        val = self.reg[operand_a]
+        self.ram_write(val, SP -1)
+        self.pc += 2
+        
+
+    def pop(self, operand_a):
+        print('pop')
+        SP = self.reg[7] #243
+        self.reg[7] = (SP + 1) % 255 #244
+        val = self.ram_read(SP)
+        self.reg[operand_a] = val 
+        self.pc += 2
+        
+
+
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+        while running:
+            
+            op = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc +1)
+            operand_b = self.ram_read(self.pc + 2)
+            # print(f'operand1: {operand_a}')
+            # print(f'operand2: {operand_b}')
 
-###HERE WE GO -- Initial checkin and PR
+
+            if op == LDI: #LDI
+                self.ldi(operand_a, operand_b)
+            elif op == PRN: #PRN
+                self.prn(operand_a)
+            elif op == MULT: #MULT
+                self.mult(operand_a,operand_b) 
+            elif op == PUSH: #PUSH
+                self.push(operand_a)
+            elif op == POP:
+                self.pop(operand_a)
+            elif op == HLT: #HLT
+                print('halt')
+                running = False
+
+
+    
